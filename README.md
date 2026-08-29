@@ -10,6 +10,8 @@
 
 **The bridge connects the two sides. It does not replace DSH, modify DSH core, or route DSH model traffic through ChatGPT.**
 
+Current package: **v0.5.1**, targeting DeepSeek Harness **0.1.1-rc.2**. After a successful connection, ChatGPT should see **tool count = 23**.
+
 ## Why this exists
 
 A normal ChatGPT + local-agent workflow has too much manual glue:
@@ -75,6 +77,8 @@ The screenshot is from a real DSH Web installation with sensitive values masked.
 dsh plugin --profile web add dsh-chatgpt-bridge
 ```
 
+`npm install dsh-chatgpt-bridge` alone is not enough: the plugin must be added to a DSH profile bundle.
+
 ### 2. Start DSH Web
 
 ```bash
@@ -106,6 +110,8 @@ cat ~/.dsh/chatgpt-bridge.token
 
 Treat this token like a password. Do not commit it, post it, or paste it into public chats.
 
+Alternatively, set `DSH_CHATGPT_BRIDGE_TOKEN` yourself and the bridge uses it instead of generating a file.
+
 ### 4. Connect ChatGPT
 
 ChatGPT Web cannot reach a plain localhost MCP endpoint directly. Use the secure MCP/tunnel connection mechanism currently supported by OpenAI and forward it to:
@@ -116,7 +122,7 @@ http://127.0.0.1:3456/mcp
 
 Use the bridge token as the MCP bearer credential where the connection flow requires it.
 
-The bridge itself remains localhost-first and does not bind a public interface.
+The bridge keeps a localhost-first design: it binds `127.0.0.1`, never exposes a public interface, and never self-hosts a tunnel.
 
 ### 5. Refresh tools and verify
 
@@ -130,7 +136,14 @@ After connecting, refresh/rescan the MCP tools in ChatGPT and run a read-only ch
 4. 返回 bridge version、health 和 workspace 名称
 ```
 
-If health is OK and your registered workspace appears, the control path is ready.
+A healthy first check should look like:
+
+```text
+bridge version = 0.5.1
+tool count = 23
+```
+
+If health is OK, the version matches, and your registered workspace appears, the control path is ready.
 
 ## First useful workflow
 
@@ -164,6 +177,7 @@ For a safe first run, start with a read-only Goal:
 This is a **control bridge**, not a remote shell replacement.
 
 - The MCP server binds to loopback by default.
+- It binds `127.0.0.1`, never exposes a public interface, and never self-hosts a tunnel.
 - DSH remains responsible for its own sandbox, approvals and workspace rules.
 - The bridge only works with workspaces already registered in DSH.
 - Tokens and tunnel/runtime secrets are stored outside the repository and should never be committed.
@@ -209,8 +223,10 @@ This is an actively maintained, independent DSH plugin. Compatibility releases t
 Current package:
 
 ```text
-dsh-chatgpt-bridge
+dsh-chatgpt-bridge@0.5.1
 ```
+
+Compatibility: **v0.5.1 → DSH 0.1.1-rc.2**. Fresh real ChatGPT UI validation after each DSH upgrade still needs to be rechecked on your machine.
 
 Distribution and ecosystem listings:
 
